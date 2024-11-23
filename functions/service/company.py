@@ -83,6 +83,7 @@ class CompanyService:
         logger.info(f"Fetching and storing all data for {symbol}")
         self.fetch_and_store_company(symbol)
         self.fetch_and_store_financials(symbol)
+        self.fetch_and_store_financials(symbol, annual=False)
 
 
 if __name__ == '__main__':
