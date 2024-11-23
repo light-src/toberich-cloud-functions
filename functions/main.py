@@ -1,7 +1,7 @@
-from firebase_functions import https_fn
+from firebase_functions import https_fn, scheduler_fn
 from firebase_admin import initialize_app
 from companies import companies
-from service.company import CompanyService
+from service.company_data_sync import CompanyDataSyncService
 import logging
 
 # Configure logging
@@ -12,17 +12,60 @@ app = initialize_app()
 
 
 @https_fn.on_request()
-def fetch_company(req: https_fn.Request) -> https_fn.Response:
-    """Take the text parameter passed to this HTTP endpoint and insert it into
-    a new document in the messages collection."""
+def sync_company(req: https_fn.Request) -> https_fn.Response:
     symbol = req.args.get("symbol")
     if symbol not in companies:
         logger.error(f"Symbol {symbol} is not in the defined list")
         return https_fn.Response("symbol is not in defined list", status=400)
+    company_service = CompanyDataSyncService()
+    company_service.sync_all(symbol)
+    return https_fn.Response(f"Company {symbol} information updated")
 
-    logger.info(f"Fetching and storing data for symbol: {symbol}")
-    company_service = CompanyService()
-    company_service.fetch_and_store_all(symbol)
 
-    logger.info(f"Symbol {symbol} fetched and stored in Firestore")
-    return https_fn.Response(f"Symbol {symbol} fetched and stored in Firestore", status=200)
+@https_fn.on_request()
+def sync_companies(req: https_fn.Request) -> https_fn.Response:
+    return https_fn.Response(sync_companies_exec())
+
+
+@scheduler_fn.on_schedule(schedule="0 16 * * 1-5")
+def sync_company_scheduled(event: scheduler_fn.ScheduledEvent) -> None:
+    sync_companies_exec()
+
+
+@https_fn.on_request()
+def sync_company_quote(req: https_fn.Request) -> https_fn.Response:
+    symbol = req.args.get("symbol")
+    if symbol not in companies:
+        logger.error(f"Symbol {symbol} is not in the defined list")
+        return https_fn.Response("symbol is not in defined list", status=400)
+    company_service = CompanyDataSyncService()
+    company_service.sync_quote(symbol)
+    return https_fn.Response(f"Company {symbol} quotes updated")
+
+
+@https_fn.on_request()
+def sync_companies_quote(req: https_fn.Request) -> https_fn.Response:
+    return https_fn.Response(sync_companies_quote_exec())
+
+
+@scheduler_fn.on_schedule(schedule="every 30 minutes from 09:30 to 16:00 on Mon, Tue, Wed, Thu, Fri")
+def sync_companies_quotes_scheduled(event: scheduler_fn.ScheduledEvent) -> None:
+    sync_companies_quote_exec()
+
+
+def sync_companies_exec() -> str:
+    logger.info("Updating company information")
+    company_service = CompanyDataSyncService()
+    for symbol in companies:
+        company_service.sync_all(symbol)
+    logger.info("Company information updated")
+    return "Company information updated"
+
+
+def sync_companies_quote_exec() -> str:
+    logger.info("Updating company quotes")
+    company_service = CompanyDataSyncService()
+    for symbol in companies:
+        company_service.sync_quote(symbol)
+    logger.info("Company quotes updated")
+    return "Company quotes updated"

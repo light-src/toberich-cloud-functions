@@ -28,36 +28,25 @@ class FmpClient:
     def __get_cashflow_url(self, symbol, annual=True):
         return self.__get_financial_url("cash-flow-statement", symbol, annual)
 
+    def __get_quote_url(self, symbol):
+        return f"{self.base_url}/v3/quote/{symbol}?apikey={self.api_key}"
+
     def get_company_profile(self, symbol):
         url = f"{self.base_url}/v4/company-core-information?symbol={symbol}&apikey={self.api_key}"
         return get_jsonparsed_data(url)
 
-    def get_income_statement(self, symbol, annual=True):
+    def get_income_statement(self, symbol, annual=True) -> list:
         url = self.__get_incomstmt_url(symbol, annual)
         return get_jsonparsed_data(url)
 
-    def get_balance_sheet(self, symbol, annual=True):
+    def get_balance_sheet(self, symbol, annual=True) -> list:
         url = self.__get_balancesheet_url(symbol, annual)
         return get_jsonparsed_data(url)
 
-    def get_cash_flow(self, symbol, annual=True):
+    def get_cash_flow(self, symbol, annual=True) -> list:
         url = self.__get_cashflow_url(symbol, annual)
         return get_jsonparsed_data(url)
 
-
-if __name__ == '__main__':
-    import os
-
-    def save_to_file(data, filename):
-        import json
-        with open(filename, 'w') as file:
-            json.dump(data, file, indent=4)
-
-    client = FmpClient(api_key=os.getenv('FMP_CLIENT_API_KEY'))
-    save_to_file(client.get_company_profile("AAPL"), "data/company_profile.json")
-    save_to_file(client.get_income_statement("AAPL", annual=False), "data/income_statement.json")
-    save_to_file(client.get_balance_sheet("AAPL", annual=False), "data/balance_sheet.json")
-    save_to_file(client.get_cash_flow("AAPL", annual=False), "data/cash_flow.json")
-    save_to_file(client.get_income_statement("AAPL"), "data/income_statement_annual.json")
-    save_to_file(client.get_balance_sheet("AAPL"), "data/balance_sheet_annual.json")
-    save_to_file(client.get_cash_flow("AAPL"), "data/cash_flow_annual.json")
+    def get_quote(self, symbol):
+        url = self.__get_quote_url(symbol)
+        return get_jsonparsed_data(url)
