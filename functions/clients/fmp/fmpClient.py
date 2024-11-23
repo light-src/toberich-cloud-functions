@@ -46,12 +46,14 @@ class FmpClient:
 
 
 if __name__ == '__main__':
+    import os
+
     def save_to_file(data, filename):
         import json
         with open(filename, 'w') as file:
             json.dump(data, file, indent=4)
 
-    client = FmpClient(api_key="Mm7PVqAUBosTmVOLi0lsHbQUUVh3f7vd")
+    client = FmpClient(api_key=os.getenv('FMP_CLIENT_API_KEY'))
     save_to_file(client.get_company_profile("AAPL"), "data/company_profile.json")
     save_to_file(client.get_income_statement("AAPL", annual=False), "data/income_statement.json")
     save_to_file(client.get_balance_sheet("AAPL", annual=False), "data/balance_sheet.json")
