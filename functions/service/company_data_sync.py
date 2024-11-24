@@ -19,11 +19,17 @@ class CompanyDataSyncService:
 
     def sync_company_profile(self, symbol):
         company_profile = self.fmpClient.get_company_profile(symbol)
+        if len(company_profile) == 0:
+            logger.error(f"Company profile for {symbol} not found")
+            return
         self.firestore.store_company_profile(symbol, company_profile[0])
         logger.info(f"Company profile for {symbol} synced")
 
     def sync_quote(self, symbol):
         quote = self.fmpClient.get_quote(symbol)
+        if len(quote) == 0:
+            logger.error(f"Quote for {symbol} not found")
+            return
         self.firestore.store_quote(symbol, quote[0])
         logger.info(f"Quote for {symbol} synced")
 
