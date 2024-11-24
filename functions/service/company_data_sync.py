@@ -1,6 +1,10 @@
 import logging
+import os
+
 from clients.fmp.fmpClient import FmpClient
 from service.firestore import FirestoreService
+from service.task_state import TaskStateService
+import concurrent.futures
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -9,8 +13,9 @@ logger = logging.getLogger(__name__)
 
 class CompanyDataSyncService:
     def __init__(self):
-        self.fmpClient = FmpClient(api_key="Mm7PVqAUBosTmVOLi0lsHbQUUVh3f7vd")
+        self.fmpClient = FmpClient(api_key=os.getenv("FMP_CLIENT_API_KEY"))
         self.firestore = FirestoreService()
+        self.taskStateService = TaskStateService()
 
     def sync_company_profile(self, symbol):
         company_profile = self.fmpClient.get_company_profile(symbol)
@@ -47,3 +52,45 @@ class CompanyDataSyncService:
         self.sync_balancesheet(symbol, annual=False)
         self.sync_cashflow(symbol, annual=False)
         logger.info(f"Data for {symbol} synced")
+
+    def sync_all_companies_task(self, get_companies_func, sync_func, set_latest_func):
+        companies = get_companies_func()
+
+        def process_symbol(symbol):
+            """sync_all 작업"""
+            sync_func(symbol)
+            return symbol  # 처리 완료된 symbol 반환
+
+        # 4개씩 처리
+        batch_size = 4
+        for i in range(0, len(companies), batch_size):
+            batch = companies[i:i + batch_size]  # 4개씩 추출
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=batch_size) as executor:
+                # batch의 symbol을 병렬로 처리
+                futures = [executor.submit(process_symbol, symbol) for symbol in batch]
+
+                # 모든 작업 완료 대기 및 결과 수집
+                results = [future.result() for future in concurrent.futures.as_completed(futures)]
+
+            # 가장 뒤에 있는 symbol (정렬 기준에 따라 results[-1])
+            last_symbol = batch[-1]  # batch의 마지막 symbol 사용
+            set_latest_func(last_symbol)
+
+            logger.info(f"Batch completed: {batch}, updated with last symbol: {last_symbol}")
+
+    def sync_all_companies_info(self):
+        self.sync_all_companies_task(
+            self.taskStateService.get_update_company_info_companies,
+            self.sync_all,
+            self.taskStateService.set_latest_updated_company_info
+        )
+        logger.info("All companies info data synced")
+
+    def sync_all_companies_quotes(self):
+        self.sync_all_companies_task(
+            self.taskStateService.get_update_company_quotes_companies,
+            self.sync_quote,
+            self.taskStateService.set_latest_updated_company_quote
+        )
+        logger.info("All companies quotes data synced")
