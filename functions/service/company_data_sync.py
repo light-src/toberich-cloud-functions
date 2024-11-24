@@ -50,13 +50,13 @@ class CompanyDataSyncService:
 
     def sync_all(self, symbol):
         self.sync_company_profile(symbol)
-        self.sync_quote(symbol)
         self.sync_incomstmt(symbol)
         self.sync_balancesheet(symbol)
         self.sync_cashflow(symbol)
         self.sync_incomstmt(symbol, annual=False)
         self.sync_balancesheet(symbol, annual=False)
         self.sync_cashflow(symbol, annual=False)
+        self.sync_quote(symbol)
         logger.info(f"Data for {symbol} synced")
 
     def sync_all_companies_task(self, get_companies_func, sync_func, set_latest_func):
