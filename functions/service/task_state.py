@@ -17,6 +17,8 @@ class TaskStateService:
         latest = self.get_info_task_state()
         if latest is None or latest['date'] != datetime.now().strftime("%Y-%m-%d"):
             return companies
+        if latest['latest_symbol'] is companies[-1]:
+            return []
         idx = companies.index(latest['latest_symbol'])
         return companies[idx + 1:]
 
