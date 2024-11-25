@@ -24,7 +24,7 @@ def sync_company(req: https_fn.Request) -> https_fn.Response:
     return https_fn.Response(f"Company {symbol} information updated")
 
 
-@scheduler_fn.on_schedule(schedule="every 9 minutes from 00:01 to 23:59 on SUN")
+@scheduler_fn.on_schedule(schedule="every 9 minutes from 00:01 to 06:00 on SUN")
 def sync_company_scheduled(event: scheduler_fn.ScheduledEvent) -> None:
     sync_companies_exec()
 
