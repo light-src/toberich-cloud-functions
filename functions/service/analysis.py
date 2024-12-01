@@ -16,8 +16,8 @@ class AnalysisService:
         quarter_ncav_ratio = self.get_quarter_ncav(symbol, quote)
 
         self.firestore.store_analysis(symbol, {
-            "annual_ncav_ratio": annual_ncav_ratio,
-            "quarter_ncav_ratio": quarter_ncav_ratio
+            "annualNcavRatio": annual_ncav_ratio,
+            "quarterNcavRatio": quarter_ncav_ratio
         })
 
     def get_annual_ncav(self, symbol, quote) -> float:

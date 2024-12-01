@@ -25,6 +25,13 @@ class CompanyDataSyncService:
         self.firestore.store_company_profile(symbol, company_profile[0])
         logger.info(f"Company profile for {symbol} synced")
 
+    def add_company_profile(self, symbol, data):
+        if data is None:
+            logger.error(f"data to add to {symbol} is None")
+            return
+        self.firestore.store_company_profile(symbol, data)
+        logger.info(f"Company profile for {symbol} synced\n data: {data}")
+
     def sync_quote(self, symbol):
         quote = self.fmpClient.get_quote(symbol)
         if len(quote) == 0:

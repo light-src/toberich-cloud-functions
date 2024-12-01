@@ -58,6 +58,22 @@ def sync_analysis(event: Event[Change[DocumentSnapshot | None]]) -> None:
     analysis_service.update_analysis(event.params["symbol"], document)
 
 
+@firestore_fn.on_document_written(document="companies/{symbol}/analysis/{date}")
+def sync_company_ncav(event: Event[Change[DocumentSnapshot | None]]) -> None:
+    document = (event.data.after.to_dict()
+                if event.data.after is not None else None)
+
+    if document is None:
+        logger.error("Document is empty")
+        return
+
+    analysis_service = CompanyDataSyncService()
+    analysis_service.add_company_profile(event.params["symbol"], {
+        "annualNcavRatio": document["annualNcavRatio"],
+        "quarterNcavRatio": document["quarterNcavRatio"]
+    })
+
+
 def sync_companies_exec() -> str:
     logger.info("Updating company information")
     company_service = CompanyDataSyncService()

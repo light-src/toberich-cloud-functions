@@ -20,7 +20,10 @@ class FirestoreService:
 
     def _store_document(self, collection_path, document_id, data):
         doc_ref = self.db.collection(collection_path).document(document_id)
-        doc_ref.set(data)
+        doc_ref.set(
+            document_data=data,
+            merge=True
+        )
         logger.info(f"Stored document in {collection_path}/{document_id}")
 
     def get_task_state(self, task_name):
@@ -40,13 +43,13 @@ class FirestoreService:
         return self._get_document(f"companies/{symbol}/financials/{data_type}/periods", f"{year}-{period}")
 
     def get_incomestmt(self, symbol, year, period):
-        return self._get_financial(symbol, "income_statements", year, period)
+        return self._get_financial(symbol, "incomeStatements", year, period)
 
     def get_balancesheet(self, symbol, year, period):
-        return self._get_financial(symbol, "balance_sheets", year, period)
+        return self._get_financial(symbol, "balanceSheets", year, period)
 
     def get_cashflow(self, symbol, year, period):
-        return self._get_financial(symbol, "cash_flows", year, period)
+        return self._get_financial(symbol, "cashFlows", year, period)
 
     def store_company_profile(self, symbol, data):
         self._store_document("companies", symbol, data)
@@ -88,10 +91,10 @@ class FirestoreService:
                     logger.error(f"Error processing item: {e}")
 
     def store_incomestmt(self, symbol, data_list):
-        self._store_financial(symbol, "income_statements", data_list)
+        self._store_financial(symbol, "incomeStatements", data_list)
 
     def store_balancesheet(self, symbol, data_list):
-        self._store_financial(symbol, "balance_sheets", data_list)
+        self._store_financial(symbol, "balanceSheets", data_list)
 
     def store_cashflow(self, symbol, data_list):
-        self._store_financial(symbol, "cash_flows", data_list)
+        self._store_financial(symbol, "cashFlows", data_list)
