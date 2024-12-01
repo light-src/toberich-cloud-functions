@@ -15,7 +15,7 @@ class TaskStateService:
 
     def get_update_company_info_companies(self) -> list:
         latest = self.get_info_task_state()
-        if latest is None or latest['date'] != datetime.now().strftime("%Y-%m-%d"):
+        if latest is None or latest['date'] != datetime.now().strftime("%Y-%m"):
             return companies
         if latest['latest_symbol'] is companies[-1]:
             return []
@@ -32,7 +32,7 @@ class TaskStateService:
     def set_latest_updated_company_info(self, symbol):
         self.firestore.set_task_state("company_info", {
             'latest_symbol': symbol,
-            'date': datetime.now().strftime("%Y-%m-%d")
+            'date': datetime.now().strftime("%Y-%m")
         })
 
     def set_latest_updated_company_quote(self, symbol):

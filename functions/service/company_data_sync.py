@@ -45,26 +45,51 @@ class CompanyDataSyncService:
         self.firestore.store_incomestmt(symbol, incomestmts)
         logger.info(f"Income statements for {symbol} synced")
 
+    def sync_incomstmt_as_reported(self, symbol, annual=True):
+        incomestmts = self.fmpClient.get_income_statement_as_reported(symbol, annual)
+        self.firestore.store_incomestmt_as_reported(symbol, incomestmts)
+        logger.info(f"Income statements As Reported for {symbol} synced")
+
     def sync_balancesheet(self, symbol, annual=True):
         balancesheets = self.fmpClient.get_balance_sheet(symbol, annual)
         self.firestore.store_balancesheet(symbol, balancesheets)
         logger.info(f"Balance sheets for {symbol} synced")
+
+    def sync_balancesheet_as_reported(self, symbol, annual=True):
+        balancesheets = self.fmpClient.get_balance_sheet_as_reported(symbol, annual)
+        self.firestore.store_balancesheet_as_reported(symbol, balancesheets)
+        logger.info(f"Balance sheets As Reported for {symbol} synced")
 
     def sync_cashflow(self, symbol, annual=True):
         cashflows = self.fmpClient.get_cash_flow(symbol, annual)
         self.firestore.store_cashflow(symbol, cashflows)
         logger.info(f"Cash flows for {symbol} synced")
 
+    def sync_cashflow_as_reported(self, symbol, annual=True):
+        cashflows = self.fmpClient.get_cash_flow_as_reported(symbol, annual)
+        self.firestore.store_cashflow_as_reported(symbol, cashflows)
+        logger.info(f"Cash flows As Reported for {symbol} synced")
+
     def sync_all(self, symbol):
         self.sync_company_profile(symbol)
-        self.sync_incomstmt(symbol)
-        self.sync_balancesheet(symbol)
-        self.sync_cashflow(symbol)
-        self.sync_incomstmt(symbol, annual=False)
-        self.sync_balancesheet(symbol, annual=False)
-        self.sync_cashflow(symbol, annual=False)
+        self.sync_financials(symbol)
         self.sync_quote(symbol)
         logger.info(f"Data for {symbol} synced")
+
+    def sync_financials(self, symbol):
+        # self.sync_incomstmt(symbol)
+        # self.sync_balancesheet(symbol)
+        # self.sync_cashflow(symbol)
+        # self.sync_incomstmt(symbol, annual=False)
+        # self.sync_balancesheet(symbol, annual=False)
+        # self.sync_cashflow(symbol, annual=False)
+        self.sync_incomstmt_as_reported(symbol)
+        self.sync_balancesheet_as_reported(symbol)
+        self.sync_cashflow_as_reported(symbol)
+        self.sync_incomstmt_as_reported(symbol, annual=False)
+        self.sync_balancesheet_as_reported(symbol, annual=False)
+        self.sync_cashflow_as_reported(symbol, annual=False)
+        logger.info(f"Financials for {symbol} synced")
 
     def sync_all_companies_task(self, get_companies_func, sync_func, set_latest_func):
         companies = get_companies_func()

@@ -68,6 +68,10 @@ class FirestoreService:
             year = item.get("calendarYear")
             period = item.get("period")
 
+            if not year:
+                date = item.get("date")
+                year = datetime.strptime(date, "%Y-%m-%d").year
+
             if not year or not period:
                 logger.warning(f"Skipping item with missing year or period: {item}")
                 return
@@ -90,11 +94,26 @@ class FirestoreService:
                 except Exception as e:
                     logger.error(f"Error processing item: {e}")
 
+    def _store_financial_as_reported(self, symbol, data_type, data_list):
+        self._store_financial(symbol, f"{data_type}AsReported", data_list)
+
+    def _store_financial_refined(self, symbol, data_type, data_list):
+        self._store_financial(symbol, f"{data_type}", data_list)
+
     def store_incomestmt(self, symbol, data_list):
-        self._store_financial(symbol, "incomeStatements", data_list)
+        self._store_financial_refined(symbol, "incomeStatements", data_list)
+
+    def store_incomestmt_as_reported(self, symbol, data_list):
+        self._store_financial_as_reported(symbol, "incomeStatements", data_list)
 
     def store_balancesheet(self, symbol, data_list):
-        self._store_financial(symbol, "balanceSheets", data_list)
+        self._store_financial_refined(symbol, "balanceSheets", data_list)
+
+    def store_balancesheet_as_reported(self, symbol, data_list):
+        self._store_financial_as_reported(symbol, "balanceSheets", data_list)
 
     def store_cashflow(self, symbol, data_list):
-        self._store_financial(symbol, "cashFlows", data_list)
+        self._store_financial_refined(symbol, "cashFlows", data_list)
+
+    def store_cashflow_as_reported(self, symbol, data_list):
+        self._store_financial_as_reported(symbol, "cashFlows", data_list)
