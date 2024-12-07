@@ -70,7 +70,14 @@ def sync_company_ncav(event: Event[Change[DocumentSnapshot | None]]) -> None:
     analysis_service = CompanyDataSyncService()
     analysis_service.add_company_profile(event.params["symbol"], {
         "annualNcavRatio": document["annualNcavRatio"],
-        "quarterNcavRatio": document["quarterNcavRatio"]
+        "quarterNcavRatio": document["quarterNcavRatio"],
+        "annualRetainedEarnings": document["annualRetainedEarnings"],
+        "quarterRetainedEarnings": document["quarterRetainedEarnings"],
+        "shareholderReturnFrequency": document["shareholderReturnFrequency"],
+        "roi": document["roi"],
+        "per": document["per"],
+        "pbr": document["pbr"],
+        "eps": document["eps"]
     })
 
 

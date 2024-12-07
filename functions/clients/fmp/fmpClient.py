@@ -40,8 +40,12 @@ class FmpClient:
     def __get_quote_url(self, symbol):
         return f"{self.base_url}/v3/quote/{symbol}?apikey={self.api_key}"
 
-    def get_company_profile(self, symbol):
+    def get_company_core_info(self, symbol):
         url = f"{self.base_url}/v4/company-core-information?symbol={symbol}&apikey={self.api_key}"
+        return get_jsonparsed_data(url)
+
+    def get_company_outlook(self, symbol):
+        url = f"{self.base_url}/v4/company-outlook?symbol={symbol}&apikey={self.api_key}"
         return get_jsonparsed_data(url)
 
     def get_income_statement(self, symbol, annual=True) -> list:

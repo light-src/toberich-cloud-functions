@@ -18,11 +18,25 @@ class CompanyDataSyncService:
         self.taskStateService = TaskStateService()
 
     def sync_company_profile(self, symbol):
-        company_profile = self.fmpClient.get_company_profile(symbol)
-        if len(company_profile) == 0:
-            logger.error(f"Company profile for {symbol} not found")
+        company_profile = self.fmpClient.get_company_outlook(symbol).get("profile")
+        if company_profile is None:
+            logger.error(f"Company Profile for {symbol} not found")
             return
-        self.firestore.store_company_profile(symbol, company_profile[0])
+
+        company_core_info = self.fmpClient.get_company_core_info(symbol)
+        if len(company_core_info) == 0:
+            logger.error(f"Company Core Info for {symbol} not found")
+            return
+
+        data = {}
+        data.update({
+            "currency": company_profile["currency"],
+            "country": company_profile["country"],
+            "sector": company_profile["sector"],
+        })
+        data.update(company_core_info[0])
+
+        self.firestore.store_company_profile(symbol, data)
         logger.info(f"Company profile for {symbol} synced")
 
     def add_company_profile(self, symbol, data):
@@ -77,12 +91,12 @@ class CompanyDataSyncService:
         logger.info(f"Data for {symbol} synced")
 
     def sync_financials(self, symbol):
-        # self.sync_incomstmt(symbol)
-        # self.sync_balancesheet(symbol)
-        # self.sync_cashflow(symbol)
-        # self.sync_incomstmt(symbol, annual=False)
-        # self.sync_balancesheet(symbol, annual=False)
-        # self.sync_cashflow(symbol, annual=False)
+        self.sync_incomstmt(symbol)
+        self.sync_balancesheet(symbol)
+        self.sync_cashflow(symbol)
+        self.sync_incomstmt(symbol, annual=False)
+        self.sync_balancesheet(symbol, annual=False)
+        self.sync_cashflow(symbol, annual=False)
         self.sync_incomstmt_as_reported(symbol)
         self.sync_balancesheet_as_reported(symbol)
         self.sync_cashflow_as_reported(symbol)
